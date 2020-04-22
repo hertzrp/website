@@ -1,0 +1,116 @@
+
+body{
+    background-color:rgb(121, 173, 250);
+    width: 100%;
+    text-align: center;
+}
+#toolbar{
+    top:0;
+    left:0;
+    position: fixed;
+    height: 40pt;
+    width:100%;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bolder;
+    font-size: 18px;
+
+    border-bottom-width: 5pt;
+    border-bottom-style: solid;
+
+    color:rgb(245, 245, 240);
+    background-color: rgb(17, 17, 17);
+    border-bottom-color: rgb(121, 173, 250);
+
+    display: block;
+}
+#toolbar ul{
+    position: relative;
+    list-style-type: none;
+    margin:0;
+    padding:0;
+}
+#toolbar li{
+    padding:15px;
+}
+#pagelink{
+    font-weight: normal;
+    color: white;
+    text-decoration:none;
+}
+#pagelink:hover{
+    color: rgb(121, 173, 250);
+}
+
+#intro{
+    border-left-width: 5pt;
+    border-left-style: solid;
+    border-left-color: black;
+
+    border-right-width: 5pt;
+    border-right-style: solid;
+    border-right-color: black;
+
+    min-width:800px;
+    height: 200pt;
+    width: 100%;
+    background-color: rgb(156, 193, 248);
+    display: block;
+}
+
+#intro p{
+    margin-right: 30pt;
+    margin-left: 30pt;
+}
+
+#about{
+    min-width: 800px;
+    max-width: 2000px;
+    height: 200pt;
+    width: 100%;
+}
+
+#about p{
+    margin-right: 30pt;
+    margin-left: 30pt;
+}
+
+#projects{
+    border-right-width: 5pt;
+    border-right-style: solid;
+    border-right-color: black;
+
+    border-left-width: 3;
+    border-left-style: solid;
+    border-left-color: black;
+
+    min-width:800px;
+    height: 200pt;
+    width: 100%;
+    background-color: rgb(156, 193, 248);
+    display: block;
+}
+#project p{
+    margin-right: 30pt;
+    margin-left: 30pt;
+}
+
+#work{
+    height: 200pt;
+    width: 100%;
+}
+
+#contacts{
+    border-right-width: 5pt;
+    border-right-style: solid;
+    border-right-color: black;
+
+    border-left-width: 5pt;
+    border-left-style: solid;
+    border-left-color: black;
+
+    height: 100pt;
+    width: 100%;
+    background-color: rgb(156, 193, 248);
+    display: block;
+}
