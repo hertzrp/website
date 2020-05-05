@@ -114,3 +114,24 @@ body{
     background-color: rgb(156, 193, 248);
     display: block;
 }
+#logo{
+    background-color: #195190FF;
+    text-align:center;
+}
+
+.logocontainer{
+    background-color: #195190FF;
+    display:inline-block;
+    margin-left:auto;
+    margin-right:auto;
+    height:50px;
+    width:50px;
+    padding-left: 5px;
+    border-radius: 15px;
+}
+.logocontainer img{
+    background-color: #195190FF;
+    height:50px;
+    width:50px;
+    border-radius: 10px;
+}
