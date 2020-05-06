@@ -115,11 +115,6 @@ body{
     display: block;
 }
 
-#socials{
-    background-color: rgb(156, 193, 248);
-    text-align:center;
-}
-
 #logo{
     background-color: rgb(156, 193, 248);
     text-align:center;
@@ -139,5 +134,9 @@ body{
     height:50px;
     width:50px;
     border-radius: 10px;
+}
+.socials{
+    background-color: rgb(156, 193, 248);
+    text-align:center;
 }
 
