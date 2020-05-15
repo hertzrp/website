@@ -115,6 +115,7 @@ a{
     bottom: -100pt;
     font-size: 18pt;
     width: 90%;
+    margin-bottom: -20pt;
 }
 #click{
     color: rgb(255, 203, 5);
