@@ -20,7 +20,7 @@ body{
 
     color:rgb(245, 245, 240);
     background-color: rgb(17, 17, 17);
-    border-bottom-color: rgb(121, 173, 250);
+    border-bottom-color: rgb(156, 193, 248);
 
     display: block;
 }
@@ -63,7 +63,7 @@ body{
     margin-left: 30pt;
 }
 
-#about{
+#about + toolbar{
     min-width: 800px;
     max-width: 2000px;
     height: auto;
@@ -106,7 +106,7 @@ body{
 }
 
 #contacts{
-    height: 200pt;
+    height: 100pt;
     width: 100%;
 }
 
@@ -126,6 +126,10 @@ body{
     margin-left: 30pt;
     width: 95%;
     color: black;
+}
+
+a.offset{
+    scroll-margin-top: 17px;
 }
 
 #work{
