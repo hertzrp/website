@@ -107,7 +107,7 @@ a{
 }
 
 .instruction{
-    position: absolute;
+    position: relative;
     margin-left: 5%;
     color: white;
     display: block;
