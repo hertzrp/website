@@ -92,30 +92,48 @@ body{
 }
 .heading{
     text-align:left;
-    margin-left:5pt;
+    margin-left:10pt;
     color: beige;
-    font-style: italic;
 }
 .subheading{
     text-align:left;
-    margin-left:20pt;
+    margin-left:30pt;
+    width: 93%;
 }
 #project p{
     margin-right: 30pt;
     margin-left: 30pt;
 }
 
-#work{
+#contacts{
     height: 200pt;
     width: 100%;
 }
 
-#contacts{
+#courses{
+    height: auto;
+    width: 100%;
+    max-width: 2000px;
+}
+
+.classname{
+    text-align:left;
+    margin-left: 15pt;
+    color: black;
+}
+.classdescription{
+    text-align:left;
+    margin-left: 30pt;
+    width: 95%;
+    color: black;
+}
+
+#work{
     border-right-width: 5pt;
     border-right-style: solid;
     border-right-color: black;
 
-    border-left-width: 5pt;
+    border-left-width: 3pt;
     border-left-style: solid;
     border-left-color: black;
 
@@ -127,11 +145,9 @@ body{
 }
 
 #logo{
-    background-color: rgb(156, 193, 248);
     text-align:center;
 }
 .logocontainer{
-    background-color: rgb(156, 193, 248);
     display:inline-block;
     margin-left:auto;
     margin-right:auto;
@@ -141,13 +157,11 @@ body{
     border-radius: 15px;
 }
 .logocontainer img{
-    background-color:rgb(156, 193, 248);
     height:50px;
     width:50px;
     border-radius: 10px;
 }
 .socials{
-    background-color: rgb(156, 193, 248);
     text-align:center;
 }
 
