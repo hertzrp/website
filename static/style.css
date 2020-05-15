@@ -23,6 +23,8 @@ body{
     border-bottom-color: rgb(156, 193, 248);
 
     display: block;
+
+
 }
 #toolbar ul{
     position: relative;
@@ -76,6 +78,7 @@ body{
 }
 
 #projects{
+    
     border-right-width: 5pt;
     border-right-style: solid;
     border-right-color: black;
