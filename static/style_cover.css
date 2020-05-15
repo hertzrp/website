@@ -81,6 +81,17 @@ a{
     max-width: 1600px;
 }
 
+.instruction{
+    font-family: ;
+    margin-left: 5%;
+    color: white;
+    position: relative;
+    display: block;
+    bottom: -100pt;
+    font-size: 12pt;
+    width: 90%;
+}
+
 #topbar{
     top: 0;
     left: 0;
