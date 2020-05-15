@@ -123,6 +123,10 @@ a{
 #click:hover{
     color: white;
 }
+.goblue{
+    font-size: 36pt;
+    color:  rgb(255, 203, 5);
+}
 
 #topbar{
     top: 0;
