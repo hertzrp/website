@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<a href="./cover.html">
     <head>
+
         <!-- Global site tag (gtag.js) - Google Analytics -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=UA-166790098-1"></script>
         <script>
@@ -11,6 +10,16 @@
         gtag('js', new Date());
 
         gtag('config', 'UA-166790098-1');
+        </script>
+
+        <script type="text/javascript">
+            function toggle_visibility(id) {
+                var e = document.getElementById(id);
+                if(e.style.display == 'block')
+                    e.style.display = 'none';
+                else
+                    e.style.display = 'block';
+            }
         </script>
 
 
@@ -26,19 +35,23 @@
                 </div>
 
                 <div id="photo">
-                    <img class="monty" src="static/photos/monty.png"></img>
+                    <a href="#" onclick="toggle_visibility('test');">
+                        <img class="monty" src="static/photos/monty.png">
+                    </a>
+                    </img>
+                </div>
+                <div id = "test">
+                    <p>it worked!</p>
                 </div>
 
                 <div id="abstract">
                     <p class="abs_text">My name Is <u>Ryan Hertz,</u> and I am an Engineering Student at <strong>The University of Michigan</strong> in Ann Arbor. I will be graduating with my bachelors degree in Computer Science in May of 2021.</strong></p>
                 </div>
-
+                <br><br><br><br><br>
                 <div class="instruction">
-                    <h3>*Click Anywhere to Begin*</h3>
+                    <a href="./cover.html"><h2 id="click">Enter Here</h2></a>
                 </div>
 
             <div id="bottombar"></div>
-        </body>
-
-</a>    
+        </body>   
 </html>

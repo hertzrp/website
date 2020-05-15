@@ -60,7 +60,16 @@ a{
     border-radius: 125px;
     display: block;
 }
-
+#test{
+    z-index: 1;
+    position: relative;
+    top: -100pt;
+    margin-right: 200pt;
+    display: none;
+    float: right;
+    color: white;
+    font-size: 24pt
+}
 .monty{
     position: relative;
     top: 15pt;
@@ -85,6 +94,9 @@ a{
     display: block;
 }
 #abstract .abs_text{
+    position: absolute;
+    display: block;
+    position: top;
     min-width: 1200px;
     max-width: 1600px;
     bottom: -100pt;
@@ -95,14 +107,20 @@ a{
 }
 
 .instruction{
-    font-family: ;
+    position: absolute;
     margin-left: 5%;
     color: white;
     position: relative;
     display: block;
     bottom: -100pt;
-    font-size: 12pt;
+    font-size: 18pt;
     width: 90%;
+}
+#click{
+    color: rgb(255, 203, 5);
+}
+#click:hover{
+    color: white;
 }
 
 #topbar{
