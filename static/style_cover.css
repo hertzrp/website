@@ -88,6 +88,7 @@ a{
     display: none;
 }
 #test1.goblue{
+    color: blueviolet;
     text-align: center;
 }
 .monty{
@@ -151,7 +152,7 @@ a{
 }
 .goblue{
     font-size: 36pt;
-    color:  rgb(255, 203, 5);
+    color:  rgb(255, 203, 255);
 }
 
 #topbar{
