@@ -13,12 +13,27 @@
         </script>
 
         <script type="text/javascript">
-            function toggle_visibility(id) {
-                var e = document.getElementById(id);
-                if(e.style.display == 'block')
-                    e.style.display = 'none';
-                else
-                    e.style.display = 'block';
+            function toggle_visibility(id1, id2, id3, id4) {
+                var e = document.getElementById(id1);
+                var e2 = document.getElementById(id2);
+                var e3 = document.getElementById(id3);
+                var e4 = document.getElementById(id4);
+                if(e.style.display == 'block'){
+                    e.style.display = 'none';}
+                else{
+                    e.style.display = 'block';}
+                if(e2.style.display == 'block'){
+                    e2.style.display = 'none';}
+                else{
+                    e2.style.display = 'block';}
+                if(e3.style.display == 'block'){
+                    e3.style.display = 'none';}
+                else{
+                    e3.style.display = 'block';}
+                if(e4.style.display == 'block'){
+                    e4.style.display = 'none';}
+                else{
+                    e4.style.display = 'block';}
             }
         </script>
 
@@ -31,26 +46,28 @@
             <div id="topbar"></div>
 
                 <div id="menu">
-                    <img class="leftm" src="static/photos/michigan.png"><h1 id="heading"><strong>Welcome to my website!</strong><img class="rightm" src="static/photos/michigan.png"></h1></img class="rightm"></img class="leftm">
+                    <img id="leftm" class="leftm" src="static/photos/michigan.png"><h1 id="heading"><strong>Welcome to my website!</strong><img id="rightm" class="rightm" src="static/photos/michigan.png"></h1></img class="rightm"></img class="leftm">
                 </div>
-
+                
                 <div id="photo">
-                    <a href="#" onclick="toggle_visibility('test');">
-                        <img class="monty" src="static/photos/monty.png">
-                    </a>
-                    </img>
+                        <a href="#" onclick="toggle_visibility('test', 'leftm', 'rightm', 'test1');">
+                            <img class="monty" src="static/photos/monty.png">
+                        </a>
+                        </img>
+                    <div id = "test">
+                        <p class="goblue">Go Blue!</p>
+                    </div>
+                    <div id = "test1">
+                        <p class="goblue">Go Blue!</p>
+                    </div>
                 </div>
-                <div id = "test">
-                    <p class="goblue">Go Blue!</p>
-                </div>
-
                 <div id="abstract">
                     <br><br>
                     <p class="abs_text">My name Is <u>Ryan Hertz,</u> and I am an Engineering Student at <strong>The University of Michigan</strong> in Ann Arbor. I will be graduating with my bachelors degree in Computer Science in May of 2021.</strong></p>
                 </div>
                 <br><br><br><br><br>
                 <div class="instruction">
-                    <a href="./cover.html"><h2 id="click">Enter Here</h2></a>
+                    <h2 id="click"><a id="click" href="./cover.html">Enter Here</h2></a>
                 </div>
                 <br>
                 <br>

@@ -1,0 +1,171 @@
+html{
+    min-width: 1200px;
+}
+
+body{
+    background-color:rgb(0, 39, 76);
+    width:100%;
+    text-align: center;
+}
+
+a{
+    text-decoration: none;
+    list-style-type: none;
+    font-weight: bolder;
+}
+
+#menu{
+    top:0;
+    left:0;
+    height: 40pt;
+    width:100%;
+    min-width: 1100px;
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bolder;
+    font-size: 18px;
+
+    display: block;
+}
+#heading{
+    margin-top: 2.5%;
+    text-align: left;
+    text-align: center;
+    color: rgb(255, 203, 5);
+    text-decoration: none;
+    list-style-type: none;
+    font-size: 48pt;
+
+}
+    .leftm{
+        float: left;
+        height: 100px;
+        width: auto;
+        display: none;
+    }
+    .rightm{
+        float: right;
+        height: 100px;
+        width: auto;
+        display: none;
+    }
+
+#photo{
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+    top: 70pt;
+    width: 325pt;
+    height: 350pt;
+    background-color: rgb(255, 203, 5);
+    border-color: black;
+    border-radius: 125px;
+    display: block;
+}
+#test{
+    left: 100%;
+    z-index: 1;
+    position: relative;
+    top: -100pt;
+    margin-left: auto;
+    margin-right: auto;
+    display: none;
+    float: right;
+    color: white;
+    font-size: 24pt
+}
+#test1{
+    z-index: 1;
+    position: relative;
+    margin-left: -100%;
+    margin-right: auto;
+    top: -100pt;
+    float: left;
+    color: white;
+    font-size: 24pt;
+    display: none;
+}
+#test1.goblue{
+    text-align: center;
+}
+.monty{
+    position: relative;
+    top: 15pt;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 100px;
+    width: auto;
+    height: 425px;
+    overflow: hidden;
+    display: block;
+}
+
+#abstract{
+    top: 90px;
+    bottom: -20px;
+    position: relative;
+    position: top;
+    font-weight: 400;
+    min-width: 1200px;
+    color: rgb(255, 203, 5);
+    display: block;
+}
+#abstract .abs_text{
+    position: absolute;
+    display: block;
+    position: center;
+    left: 5%;
+    min-width: 900px;
+    font-size: 24pt;
+    width: 90%;
+}
+
+.instruction{
+    position: absolute;
+    margin-left: 0;
+    margin-right: 0;
+    bottom: 10%;
+    color: white;
+    display: block;
+    font-size: 18pt;
+    margin-left: 5%;
+    width: 90%;
+    margin-bottom: -20pt;
+}
+#click{
+    margin-left: auto;
+    margin-right: auto;
+    width: 200px;
+    background-color: rgb(255, 203, 5);
+    color:rgb(0, 39, 76);
+    border-radius: 100px;
+}
+#click:hover{
+    color: white;
+}
+.goblue{
+    font-size: 36pt;
+    color:  rgb(255, 203, 5);
+}
+
+#topbar{
+    top: 0;
+    left: 0;
+    padding:0;
+    position: fixed;
+    background-color:  rgb(255, 203, 5);
+    height: 30px;
+    width: 100%;
+    display: block;
+}
+#bottombar{
+    bottom: 0;
+    left: 0;
+    padding:0;
+    position: fixed;
+    background-color:  rgb(255, 203, 5);
+    height: 30px;
+    width: 100%;
+    display: block;
+}

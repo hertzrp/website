@@ -41,11 +41,13 @@ a{
         float: left;
         height: 100px;
         width: auto;
+        display: none;
     }
     .rightm{
         float: right;
         height: 100px;
         width: auto;
+        display: none;
     }
 
 #photo{
@@ -61,14 +63,30 @@ a{
     display: block;
 }
 #test{
+    left: 100%;
     z-index: 1;
     position: relative;
     top: -100pt;
-    margin-right: 200pt;
+    margin-left: auto;
+    margin-right: auto;
     display: none;
     float: right;
     color: white;
     font-size: 24pt
+}
+#test1{
+    z-index: 1;
+    position: relative;
+    margin-left: -100%;
+    margin-right: auto;
+    top: -100pt;
+    float: left;
+    color: white;
+    font-size: 24pt;
+    display: none;
+}
+#test1.goblue{
+    text-align: center;
 }
 .monty{
     position: relative;
@@ -96,28 +114,32 @@ a{
 #abstract .abs_text{
     position: absolute;
     display: block;
-    position: top;
+    position: center;
+    left: 5%;
     min-width: 900px;
-    max-width: 1600px;
-    bottom: -100pt;
-    margin-left: 5%;
     font-size: 24pt;
     width: 90%;
-    max-width: 1600px;
 }
 
 .instruction{
-    position: relative;
-    margin-left: 5%;
+    position: absolute;
+    margin-left: 0;
+    margin-right: 0;
+    bottom: 10%;
     color: white;
     display: block;
-    bottom: -100pt;
     font-size: 18pt;
+    margin-left: 5%;
     width: 90%;
     margin-bottom: -20pt;
 }
 #click{
-    color: rgb(255, 203, 5);
+    margin-left: auto;
+    margin-right: auto;
+    width: 200px;
+    background-color: rgb(255, 203, 5);
+    color:rgb(0, 39, 76);
+    border-radius: 100px;
 }
 #click:hover{
     color: white;
