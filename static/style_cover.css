@@ -14,10 +14,6 @@ a{
     list-style-type: none;
     font-weight: bolder;
 }
-#space{
-    color: blue;
-    display: block;
-}
 #menu{
     top:0;
     left:0;
@@ -81,7 +77,7 @@ a{
 #test1{
     z-index: 1;
     position: relative;
-    margin-left: -100%;
+    margin-left: auto;
     margin-right: auto;
     top: -150pt;
     float: left;
