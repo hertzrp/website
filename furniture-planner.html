@@ -160,8 +160,9 @@
   .placed-item.type-room .item-label,
   .placed-item.type-room .item-dims {
     position: absolute; z-index: 6; display: block;
-    max-width: calc(100% - 20px); white-space: normal; overflow-wrap: break-word; box-sizing: border-box;
+    max-width: none; white-space: nowrap; box-sizing: border-box;
   }
+  .placed-item.type-room .item-label { cursor: move; }
   .placed-item.type-room[data-label-pos="tl"] .item-label { top: 8px; left: 10px; font-size: 13px; background: rgba(28,28,26,0.85); }
   .placed-item.type-room[data-label-pos="tl"] .item-dims  { top: 29px; left: 10px; font-size: 11px; }
   .placed-item.type-room[data-label-pos="tr"] .item-label { top: 8px; right: 10px; font-size: 13px; background: rgba(28,28,26,0.85); }
@@ -543,6 +544,9 @@ function applyLayout(data) {
       el.style.transform = 'rotate(' + it.rotation + 'deg)';
     }
     if (it.showDims === false) el.classList.add('no-dims');
+    if (it.labelCustom && it.type === 'room' && it.labelX != null) {
+      setRoomLabelPos(el, el.querySelector('.item-label'), el.querySelector('.item-dims'), it.labelX, it.labelY);
+    }
   });
   updateCount();
   applyFurnitureVisibility();
@@ -697,6 +701,49 @@ canvas.addEventListener('pointerup', e => {
   if (newEl) selectItem(newEl);
 });
 
+// ---------- Draggable room labels ----------
+function setRoomLabelPos(roomEl, labelSpan, dimsSpan, x, y) {
+  roomEl.dataset.labelCustom = '1';
+  roomEl.dataset.labelX = String(x);
+  roomEl.dataset.labelY = String(y);
+  labelSpan.style.left = x + 'px'; labelSpan.style.top = y + 'px';
+  labelSpan.style.right = 'auto'; labelSpan.style.bottom = 'auto';
+  if (dimsSpan) {
+    dimsSpan.style.left = x + 'px'; dimsSpan.style.top = (y + 21) + 'px';
+    dimsSpan.style.right = 'auto'; dimsSpan.style.bottom = 'auto';
+  }
+}
+function clearRoomLabelPos(roomEl) {
+  delete roomEl.dataset.labelCustom;
+  delete roomEl.dataset.labelX;
+  delete roomEl.dataset.labelY;
+  ['.item-label', '.item-dims'].forEach(sel => {
+    const s = roomEl.querySelector(sel);
+    if (s) { s.style.left = s.style.top = s.style.right = s.style.bottom = ''; }
+  });
+}
+function makeLabelDraggable(roomEl, labelSpan, dimsSpan) {
+  labelSpan.addEventListener('pointerdown', e => {
+    if (mode !== 'move') return;
+    e.stopPropagation();
+    labelSpan.setPointerCapture(e.pointerId);
+    const startX = labelSpan.offsetLeft, startY = labelSpan.offsetTop;
+    const sx = e.clientX, sy = e.clientY;
+    let moved = false;
+    function onMove(ev) {
+      if (Math.abs(ev.clientX - sx) > 2 || Math.abs(ev.clientY - sy) > 2) moved = true;
+      setRoomLabelPos(roomEl, labelSpan, dimsSpan, startX + (ev.clientX - sx), startY + (ev.clientY - sy));
+    }
+    function onUp() {
+      labelSpan.removeEventListener('pointermove', onMove);
+      labelSpan.removeEventListener('pointerup', onUp);
+      if (!moved) selectItem(roomEl);
+    }
+    labelSpan.addEventListener('pointermove', onMove);
+    labelSpan.addEventListener('pointerup', onUp);
+  });
+}
+
 // ---------- Core item creation ----------
 function createItem(opts) {
   const el = document.createElement('div');
@@ -732,6 +779,8 @@ function createItem(opts) {
   dimsSpan.className = 'item-dims';
   el.appendChild(dimsSpan);
   updateDimsLabel(el);
+
+  if (opts.type === 'room') makeLabelDraggable(el, labelSpan, dimsSpan);
 
   const delBtn = document.createElement('button');
   delBtn.className = 'del-btn';
@@ -862,6 +911,7 @@ document.querySelectorAll('.labelpos-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     if (!selected || selected.dataset.type !== 'room') return;
     selected.dataset.labelPos = btn.dataset.pos;
+    clearRoomLabelPos(selected); // snap back to a preset corner, dropping any custom drag
     document.querySelectorAll('.labelpos-btn').forEach(b => b.classList.toggle('active', b === btn));
   });
 });
@@ -994,7 +1044,10 @@ function serializeLayout() {
       color: el.dataset.color || '',
       shape: el.dataset.shape || '',
       labelPos: el.dataset.labelPos || '',
-      showDims: !el.classList.contains('no-dims')
+      showDims: !el.classList.contains('no-dims'),
+      labelCustom: el.dataset.labelCustom === '1',
+      labelX: el.dataset.labelX ? parseFloat(el.dataset.labelX) : null,
+      labelY: el.dataset.labelY ? parseFloat(el.dataset.labelY) : null
     });
   });
   return items;
