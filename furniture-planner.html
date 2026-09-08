@@ -183,6 +183,9 @@
   /* Room-layout-only view: hide every furniture piece at once */
   #canvas.hide-furniture .placed-item[data-type="furniture"] { display: none !important; }
 
+  /* Hide the dimension labels to declutter tight spaces */
+  #canvas.hide-dims .item-dims { display: none !important; }
+
   .hint { max-width: 640px; margin: 14px auto 0; font-size: 12px; color: var(--text-muted); }
 
   .sidebar-right {
@@ -278,6 +281,7 @@
         </div>
         <div class="meta">
           <label class="lock-toggle"><input type="checkbox" id="toggle-furniture" checked> Show furniture</label>
+          <label class="lock-toggle"><input type="checkbox" id="toggle-dims" checked> Measurements</label>
           <label class="lock-toggle"><input type="checkbox" id="lock-rooms"> Lock rooms</label>
           <span><span id="piece-count">0</span> pieces</span>
           <button id="save-btn">Save layout</button>
@@ -934,6 +938,10 @@ document.getElementById('toggle-furniture').addEventListener('change', e => {
   furnitureVisible = e.target.checked;
   if (!furnitureVisible && selected && selected.dataset.type === 'furniture') deselect();
   applyFurnitureVisibility();
+});
+
+document.getElementById('toggle-dims').addEventListener('change', e => {
+  canvas.classList.toggle('hide-dims', !e.target.checked);
 });
 
 // ---------- Save / load layout as a file ----------
