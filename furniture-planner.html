@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Floor plan furniture planner</title>
+<style>
+  :root {
+    --ink: #2A2A26;
+    --paper: #FAF8F4;
+    --panel: #FFFFFF;
+    --line: #DAD5CA;
+    --accent: #1F5F55;
+    --accent-soft: #DCEAE7;
+    --text-muted: #736F64;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+  }
+  .shell { display: flex; min-height: 100vh; }
+
+  .sidebar-left {
+    width: 240px;
+    flex-shrink: 0;
+    background: var(--panel);
+    border-right: 1px solid var(--line);
+    padding: 24px 18px;
+    overflow-y: auto;
+    max-height: 100vh;
+  }
+  .sidebar-left h1 {
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-size: 20px;
+    font-weight: 400;
+    margin: 0 0 4px;
+  }
+  .sidebar-left .sub {
+    font-size: 12.5px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0 0 18px;
+  }
+
+  .room-legend-wrap { margin-bottom: 22px; }
+  .room-legend-wrap h2 { font-size: 12px; font-weight: 600; color: var(--text-muted); margin: 0 0 8px; }
+  .legend-row {
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    padding: 6px 9px; border: 1px solid var(--line); border-radius: 6px; margin-bottom: 6px;
+    font-size: 12.5px; cursor: pointer; background: var(--paper);
+  }
+  .legend-row:hover { background: var(--accent-soft); border-color: var(--accent); }
+  .legend-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .legend-dims { color: var(--text-muted); font-size: 11.5px; white-space: nowrap; flex-shrink: 0; }
+  .legend-empty { font-size: 12px; color: var(--text-muted); }
+
+  .custom-form {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 22px;
+  }
+  .custom-form h2 { font-size: 12px; font-weight: 600; color: var(--text-muted); margin: 0 0 8px; }
+  .custom-form label { display: block; font-size: 11px; color: var(--text-muted); margin: 6px 0 2px; }
+  .custom-form input[type="text"], .custom-form input[type="number"] {
+    width: 100%; font-size: 13px; padding: 5px 7px; border: 1px solid var(--line); border-radius: 5px; background: #fff;
+  }
+  .custom-form .row { display: flex; gap: 8px; }
+  .custom-form .row > div { flex: 1; }
+  .custom-form input[type="color"] { width: 36px; height: 26px; border: 1px solid var(--line); border-radius: 5px; padding: 0; background: #fff; }
+  .custom-form .color-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  #add-custom-btn {
+    margin-top: 10px; width: 100%; background: var(--accent); color: #fff; border: none;
+    font-size: 12.5px; padding: 8px; border-radius: 6px; cursor: pointer;
+  }
+  #add-custom-btn:hover { opacity: 0.9; }
+
+  .group { margin-bottom: 22px; }
+  .group h2 { font-size: 12px; font-weight: 600; letter-spacing: 0.02em; color: var(--text-muted); margin: 0 0 8px; }
+  .chip {
+    display: flex; align-items: center; gap: 8px; padding: 7px 9px;
+    border: 1px solid var(--line); border-left-width: 4px; border-radius: 6px;
+    margin-bottom: 6px; cursor: grab; background: var(--paper); font-size: 13px; user-select: none;
+  }
+  .chip:active { cursor: grabbing; }
+  .chip-swatch { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+  .chip-dims { margin-left: auto; font-size: 10.5px; color: var(--text-muted); }
+
+  .main { flex: 1; padding: 24px 32px 60px; overflow: auto; }
+  .topbar { max-width: 744px; margin: 0 auto 14px; }
+  .topbar h2 { font-family: Georgia, "Iowan Old Style", serif; font-weight: 400; font-size: 19px; margin: 0 0 12px; }
+  .toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  .modes { display: flex; gap: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 3px; }
+  .mode-btn { background: none; border: none; font-size: 12.5px; padding: 6px 12px; border-radius: 6px; cursor: pointer; color: var(--ink); }
+  .mode-btn.active { background: var(--accent); color: #fff; }
+  .meta { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 14px; }
+  #clear-btn, #sample-btn { background: none; border: 1px solid var(--line); color: var(--ink); font-size: 12.5px; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+  #clear-btn:hover, #sample-btn:hover { background: var(--accent-soft); border-color: var(--accent); }
+  #save-btn, .load-label {
+    background: none; border: 1px solid var(--line); color: var(--ink); font-size: 12.5px;
+    padding: 6px 12px; border-radius: 6px; cursor: pointer; display: inline-block;
+  }
+  #save-btn:hover, .load-label:hover { background: var(--accent-soft); border-color: var(--accent); }
+
+  .canvas-wrap { max-width: 744px; margin: 0 auto; }
+  #canvas {
+    position: relative; width: 744px; height: 480px;
+    background:
+      linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 20px 20px,
+      linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0 / 20px 20px,
+      #fff;
+    border: 2px solid var(--ink); border-radius: 4px; box-shadow: 0 1px 0 var(--line); user-select: none;
+  }
+  #canvas.mode-wall, #canvas.mode-counter, #canvas.mode-room { cursor: crosshair; }
+
+  .placed-item {
+    position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    border-radius: 5px; border: 1px solid rgba(0,0,0,0.25); font-size: 11px; line-height: 1.2;
+    padding: 2px 4px; color: #1c1c1a; cursor: grab; touch-action: none; z-index: 1; gap: 2px;
+  }
+  .placed-item:active { cursor: grabbing; }
+  .placed-item.selected { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .placed-item.type-wall { background: var(--ink); border-color: var(--ink); z-index: 1; }
+  .placed-item.type-counter {
+    background: rgba(220, 215, 204, 0.88);
+    border: 1.5px solid #A79E8E;
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,0.5), inset 0 -4px 0 rgba(0,0,0,0.07);
+    color: #4a4638; z-index: 1;
+  }
+  .placed-item.type-room {
+    display: block; text-align: left; border: 1.5px solid var(--ink); border-radius: 4px;
+    padding: 8px 10px; z-index: 0; cursor: grab;
+  }
+  .placed-item.type-room.locked { cursor: default; }
+  .item-label {
+    font-weight: 600; background: rgba(28,28,26,0.75); color: #fff;
+    padding: 1px 6px; border-radius: 4px; display: inline-block; white-space: nowrap;
+    position: relative; z-index: 1;
+  }
+  .item-dims {
+    font-size: 10px; color: #EDEAE1; background: rgba(28,28,26,0.6);
+    padding: 1px 5px; border-radius: 4px; white-space: nowrap; display: inline-block;
+    position: relative; z-index: 1;
+  }
+  .placed-item.type-room .item-label,
+  .placed-item.type-room .item-dims {
+    position: absolute; z-index: 6; display: block;
+    max-width: calc(100% - 20px); white-space: normal; overflow-wrap: break-word; box-sizing: border-box;
+  }
+  .placed-item.type-room[data-label-pos="tl"] .item-label { top: 8px; left: 10px; font-size: 13px; background: rgba(28,28,26,0.85); }
+  .placed-item.type-room[data-label-pos="tl"] .item-dims  { top: 29px; left: 10px; font-size: 11px; }
+  .placed-item.type-room[data-label-pos="tr"] .item-label { top: 8px; right: 10px; font-size: 13px; background: rgba(28,28,26,0.85); }
+  .placed-item.type-room[data-label-pos="tr"] .item-dims  { top: 29px; right: 10px; font-size: 11px; }
+  .placed-item.type-room[data-label-pos="bl"] .item-label { bottom: 29px; left: 10px; font-size: 13px; background: rgba(28,28,26,0.85); }
+  .placed-item.type-room[data-label-pos="bl"] .item-dims  { bottom: 8px; left: 10px; font-size: 11px; }
+  .placed-item.type-room[data-label-pos="br"] .item-label { bottom: 29px; right: 10px; font-size: 13px; background: rgba(28,28,26,0.85); }
+  .placed-item.type-room[data-label-pos="br"] .item-dims  { bottom: 8px; right: 10px; font-size: 11px; }
+
+  .item-shape { position: absolute; inset: 0; z-index: 0; }
+  .item-shape.tri { clip-path: polygon(50% 0%, 0% 100%, 100% 100%); filter: drop-shadow(0 0 1.5px rgba(0,0,0,0.4)); }
+  .placed-item .del-btn {
+    position: absolute; top: -8px; right: -8px; width: 18px; height: 18px; border-radius: 50%;
+    background: var(--ink); color: #fff; border: none; font-size: 12px; line-height: 1; cursor: pointer;
+    display: none; align-items: center; justify-content: center; z-index: 3;
+  }
+  .placed-item:hover .del-btn { display: flex; }
+  .resize-handle {
+    position: absolute; right: -6px; bottom: -6px; width: 12px; height: 12px;
+    background: var(--accent); border: 2px solid #fff; border-radius: 50%; cursor: nwse-resize; z-index: 3;
+  }
+
+  .draw-preview { position: absolute; border: 1.5px dashed var(--accent); background: rgba(31, 95, 85, 0.08); pointer-events: none; }
+
+  /* Room-layout-only view: hide every furniture piece at once */
+  #canvas.hide-furniture .placed-item[data-type="furniture"] { display: none !important; }
+
+  .hint { max-width: 640px; margin: 14px auto 0; font-size: 12px; color: var(--text-muted); }
+
+  .sidebar-right {
+    width: 220px; flex-shrink: 0; background: var(--panel); border-left: 1px solid var(--line);
+    padding: 24px 18px; overflow-y: auto; max-height: 100vh; display: none;
+  }
+  .sidebar-right.open { display: block; }
+  .sidebar-right h2 { font-size: 12px; font-weight: 600; color: var(--text-muted); margin: 0 0 4px; }
+  .sidebar-right .item-name { font-size: 15px; margin: 0 0 16px; }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 3px; }
+  .field input[type="number"], .field input[type="text"] { width: 100%; font-size: 13px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 5px; }
+  .field input[type="color"] { width: 100%; height: 32px; border: 1px solid var(--line); border-radius: 5px; padding: 0; background: #fff; }
+  .field input[type="range"] { width: 100%; }
+  #insp-delete {
+    width: 100%; margin-top: 6px; background: none; border: 1px solid #C4463A; color: #C4463A;
+    font-size: 12.5px; padding: 8px; border-radius: 6px; cursor: pointer;
+  }
+  #insp-delete:hover { background: #FBEAE8; }
+  #insp-delete:disabled { opacity: 0.4; cursor: not-allowed; }
+  .field input[type="color"]:disabled { opacity: 0.4; cursor: not-allowed; }
+  .labelpos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .labelpos-btn {
+    font-size: 11px; padding: 6px 4px; border: 1px solid var(--line); border-radius: 5px;
+    background: var(--paper); cursor: pointer; color: var(--ink);
+  }
+  .labelpos-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .lock-toggle { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+
+  /* Narrow screens: stack the panels, let the plan scroll sideways */
+  @media (max-width: 900px) {
+    .shell { flex-direction: column; }
+    .sidebar-left, .sidebar-right {
+      width: auto; max-height: none;
+      border-right: none; border-left: none; border-bottom: 1px solid var(--line);
+    }
+    .main { padding: 18px 16px 48px; }
+    .topbar, .canvas-wrap { max-width: 100%; }
+    .canvas-wrap { overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="sidebar-left">
+    <h1>Furniture planner</h1>
+    <p class="sub">Room boxes are draggable and resizable just like furniture &mdash; click one, drag its corner, or type exact numbers on the right. Use "Draw room" to add a space that isn't there yet. Lock rooms once the layout's right, then place furniture on top.</p>
+
+    <div class="room-legend-wrap">
+      <h2>Rooms in this layout</h2>
+      <div id="room-legend"></div>
+    </div>
+
+    <div class="custom-form">
+      <h2>Add your own piece</h2>
+      <label for="cf-name">Name</label>
+      <input type="text" id="cf-name" placeholder="e.g. Reading chair">
+      <div class="row">
+        <div>
+          <label for="cf-w">Width (in)</label>
+          <input type="number" id="cf-w" min="1" placeholder="30">
+        </div>
+        <div>
+          <label for="cf-h">Depth (in)</label>
+          <input type="number" id="cf-h" min="1" placeholder="30">
+        </div>
+      </div>
+      <div class="color-row">
+        <input type="color" id="cf-color" value="#7A8B99">
+        <span style="font-size:11px; color:var(--text-muted);">Swatch color</span>
+      </div>
+      <label for="cf-shape" style="margin-top:8px;">Shape</label>
+      <select id="cf-shape" style="width:100%; font-size:13px; padding:5px 7px; border:1px solid var(--line); border-radius:5px;">
+        <option value="rect">Rectangle</option>
+        <option value="triangle">Triangle</option>
+      </select>
+      <button id="add-custom-btn">Add to palette</button>
+    </div>
+
+    <div id="palette"></div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <h2>Sample layout &mdash; drag things around</h2>
+      <div class="toolbar">
+        <div class="modes">
+          <button class="mode-btn active" data-mode="move">Move / arrange</button>
+          <button class="mode-btn" data-mode="room">Draw room</button>
+          <button class="mode-btn" data-mode="wall">Draw wall</button>
+          <button class="mode-btn" data-mode="counter">Draw counter</button>
+        </div>
+        <div class="meta">
+          <label class="lock-toggle"><input type="checkbox" id="toggle-furniture" checked> Show furniture</label>
+          <label class="lock-toggle"><input type="checkbox" id="lock-rooms"> Lock rooms</label>
+          <span><span id="piece-count">0</span> pieces</span>
+          <button id="save-btn">Save layout</button>
+          <label for="load-input" id="load-btn" class="load-label">Load layout</label>
+          <input type="file" id="load-input" accept="application/json" style="display:none;">
+          <button id="sample-btn">Load sample</button>
+          <button id="clear-btn">Clear all</button>
+        </div>
+      </div>
+    </div>
+    <div class="canvas-wrap">
+      <div id="canvas"></div>
+      <p class="hint">Width, depth, and name for anything selected show up on the right and update live as you resize. Double-click any piece to quick-rotate 90&deg;. Untick <strong>Show furniture</strong> to see the empty room layout on its own. This page keeps nothing between visits &mdash; hit <strong>Save layout</strong> to download a file, and <strong>Load layout</strong> to bring it back next time you open this page. <strong>Load sample</strong> restores the example.</p>
+    </div>
+  </div>
+
+  <div class="sidebar-right" id="inspector">
+    <h2>Selected piece</h2>
+    <div class="field">
+      <label for="insp-name">Name</label>
+      <input type="text" id="insp-name" placeholder="Name">
+    </div>
+    <div class="field" id="insp-color-field">
+      <label for="insp-color">Color</label>
+      <input type="color" id="insp-color">
+    </div>
+    <div class="field">
+      <label for="insp-w">Width (in)</label>
+      <input type="number" id="insp-w" min="1">
+    </div>
+    <div class="field">
+      <label for="insp-h">Depth (in)</label>
+      <input type="number" id="insp-h" min="1">
+    </div>
+    <div class="field" id="insp-labelpos-field">
+      <label>Label position</label>
+      <div class="labelpos-grid">
+        <button type="button" class="labelpos-btn" data-pos="tl">&#8598; Top-left</button>
+        <button type="button" class="labelpos-btn" data-pos="tr">&#8599; Top-right</button>
+        <button type="button" class="labelpos-btn" data-pos="bl">&#8601; Bottom-left</button>
+        <button type="button" class="labelpos-btn" data-pos="br">&#8600; Bottom-right</button>
+      </div>
+    </div>
+    <div class="field">
+      <label for="insp-r">Rotation (&deg;)</label>
+      <input type="range" id="insp-r" min="0" max="359" step="1">
+      <input type="number" id="insp-r-num" min="0" max="359" style="margin-top:6px;">
+    </div>
+    <button id="insp-delete">Remove piece</button>
+  </div>
+</div>
+
+<script>
+const SCALE = 1.6; // pixels per inch
+
+const ROOMS = [
+  { id:'kitchen',  label:'Kitchen',      x:16,  y:16,  w:290, h:216, fill:'#E7EDE2' },
+  { id:'pantry',   label:'Pantry',       x:322, y:16,  w:69,  h:69,  fill:'#EFEAE3' },
+  { id:'living',   label:'Living room',  x:407, y:16,  w:280, h:216, fill:'#F1EAE0' },
+  { id:'entry',    label:'Entry',        x:16,  y:248, w:78,  h:72,  fill:'#EDEBE6' },
+  { id:'wd',       label:'W/D',          x:110, y:248, w:56,  h:100, fill:'#E9EDEA' },
+  { id:'hall',     label:'Hall',         x:182, y:248, w:51,  h:102, fill:'#F3F1EC' },
+  { id:'closetsm', label:'closet',       x:249, y:248, w:54,  h:108, fill:'#EFEAE3' },
+  { id:'closet',   label:'Closet',       x:319, y:248, w:141, h:184, fill:'#EFEAE3' },
+  { id:'bedroom',  label:'Bedroom',      x:476, y:248, w:251, h:205, fill:'#E7ECF0' },
+  { id:'bathroom', label:'Bathroom',     x:16,  y:360, w:259, h:99,  fill:'#E9EDEA' },
+];
+
+const FURNITURE_GROUPS = [
+  { room: 'Bedroom', color:'#8FA6B8', items: [
+    { id:'bed-king', label:'King bed', wIn:76, hIn:80 },
+    { id:'nightstand', label:'Nightstand', wIn:20, hIn:20 },
+    { id:'dresser', label:'Dresser', wIn:60, hIn:20 },
+    { id:'tv-bed', label:'Wall TV', wIn:55, hIn:5, color:'#5B6B78' },
+  ]},
+  { room: 'Dressing', color:'#B79B7A', items: [
+    { id:'wardrobe', label:'Wardrobe', wIn:48, hIn:24 },
+    { id:'dry-bar', label:'Dry bar cabinet', wIn:40, hIn:20 },
+  ]},
+  { room: 'Bath / laundry', color:'#7C8A94', items: [
+    { id:'vanity', label:'Vanity', wIn:30, hIn:20 },
+    { id:'toilet', label:'Toilet', wIn:16, hIn:28 },
+    { id:'tub', label:'Tub / shower', wIn:60, hIn:32 },
+    { id:'washer-dryer', label:'Washer / dryer', wIn:27, hIn:30 },
+  ]},
+  { room: 'Living room', color:'#A45C42', items: [
+    { id:'sofa', label:'Sofa', wIn:84, hIn:38 },
+    { id:'sectional', label:'Sectional', wIn:104, hIn:66 },
+    { id:'coffee-table', label:'Coffee table', wIn:48, hIn:24 },
+    { id:'tv-console', label:'TV console', wIn:60, hIn:16, color:'#8C4F39' },
+    { id:'accent-chair', label:'Accent chair', wIn:30, hIn:30 },
+    { id:'bookshelf', label:'Bookshelf', wIn:36, hIn:12, color:'#8C4F39' },
+    { id:'rug', label:'Area rug (8x5)', wIn:96, hIn:60, color:'rgba(164,92,66,0.16)' },
+  ]},
+  { room: 'Kitchen / dining', color:'#7A9471', items: [
+    { id:'dining-table', label:'Dining table', wIn:60, hIn:36 },
+    { id:'bar-stool', label:'Bar stool', wIn:16, hIn:16 },
+    { id:'island', label:'Kitchen island', wIn:72, hIn:36, color:'#66805F' },
+  ]},
+  { room: 'Patio', color:'#A69065', items: [
+    { id:'bistro-table', label:'Bistro table', wIn:24, hIn:24 },
+    { id:'patio-chair', label:'Patio chair', wIn:22, hIn:22 },
+    { id:'planter', label:'Planter', wIn:14, hIn:14, color:'#7A9471' },
+  ]},
+];
+
+// Preloaded example so the planner isn't empty on open. Users can clear it,
+// tweak it, or load their own saved file at any time.
+const SAMPLE_LAYOUT = {
+  scale: 1.6,
+  items: [
+    {"type":"room","label":"Kitchen","left":79.175,"top":24,"width":290,"height":216,"rotation":0,"color":"#E7EDE2","shape":"","labelPos":"bl"},
+    {"type":"room","label":"Food","left":303.6,"top":26.3875,"width":67.4,"height":49,"rotation":0,"color":"#572e00","shape":"","labelPos":"tl"},
+    {"type":"room","label":"Living room","left":371.775,"top":24.8,"width":280,"height":216,"rotation":0,"color":"#272b23","shape":"","labelPos":"bl"},
+    {"type":"room","label":"Entry","left":-0.787537,"top":166.4,"width":78,"height":72,"rotation":0,"color":"#EDEBE6","shape":"","labelPos":"tl"},
+    {"type":"room","label":"W/D","left":58.775,"top":242.4,"width":64,"height":100,"rotation":0,"color":"#572e00","shape":"","labelPos":"tl"},
+    {"type":"room","label":"Hall","left":128.375,"top":243.962,"width":59.8,"height":102,"rotation":0,"color":"#272b23","shape":"","labelPos":"tl"},
+    {"type":"room","label":"Closet","left":192.137,"top":245.562,"width":70.8,"height":53.6,"rotation":0,"color":"#572e00","shape":"","labelPos":"tl"},
+    {"type":"room","label":"Bedroom Closet","left":260.6,"top":260,"width":141,"height":184,"rotation":0,"color":"#572e00","shape":"","labelPos":"br"},
+    {"type":"room","label":"Bedroom","left":401.6,"top":240,"width":251,"height":205,"rotation":0,"color":"#c1d6e7","shape":"","labelPos":"tl"},
+    {"type":"room","label":"Bathroom","left":15.2,"top":347.2,"width":239.8,"height":96.6,"rotation":0,"color":"#6d6892","shape":"","labelPos":"tr"},
+    {"type":"counter","label":"Coffee Counter","left":262.95,"top":232.45,"width":136,"height":23.2,"rotation":0,"color":"#DCD7CC","shape":"","labelPos":""},
+    {"type":"room","label":"Balcony","left":653,"top":80.2,"width":82.4,"height":157.6,"rotation":0,"color":"#b1dce2","shape":"","labelPos":"tl"},
+    {"type":"wall","label":"Wall","left":324.2,"top":260.2,"width":18.4,"height":112,"rotation":0,"color":"","shape":"","labelPos":""},
+    {"type":"counter","label":"Kitchen Island","left":143.478,"top":126.057,"width":159.2,"height":39.2,"rotation":0,"color":"#DCD7CC","shape":"","labelPos":""},
+    {"type":"furniture","label":"King bed","left":470.562,"top":314.55,"width":121.6,"height":128,"rotation":0,"color":"#8FA6B8","shape":"","labelPos":""},
+    {"type":"furniture","label":"couch piece","left":370.9,"top":95.925,"width":71.2,"height":71.2,"rotation":0,"color":"#65a1d2","shape":"","labelPos":""},
+    {"type":"furniture","label":"couch piece","left":442.325,"top":23.15,"width":71.2,"height":71.2,"rotation":0,"color":"#65a1d2","shape":"","labelPos":""},
+    {"type":"furniture","label":"Fridge","left":41.15,"top":108.575,"width":41.6,"height":35.2,"rotation":0,"color":"#2516f3","shape":"","labelPos":""},
+    {"type":"furniture","label":"TV console","left":473.6,"top":209.2,"width":96,"height":25.6,"rotation":0,"color":"#8C4F39","shape":"","labelPos":""},
+    {"type":"furniture","label":"Coffee table","left":464.188,"top":108.988,"width":76.8,"height":38.4,"rotation":0,"color":"#A45C42","shape":"","labelPos":""},
+    {"type":"furniture","label":"couch piece","left":370.95,"top":23.9625,"width":71.2,"height":71.2,"rotation":0,"color":"#65a1d2","shape":"","labelPos":""},
+    {"type":"furniture","label":"Nightstand","left":434.587,"top":413.4,"width":32,"height":32,"rotation":0,"color":"#8FA6B8","shape":"","labelPos":""},
+    {"type":"furniture","label":"Nightstand","left":593.788,"top":412.6,"width":32,"height":32,"rotation":0,"color":"#8FA6B8","shape":"","labelPos":""},
+    {"type":"furniture","label":"TV","left":469.387,"top":234.6,"width":104,"height":4.8,"rotation":0,"color":"#f34f5f","shape":"","labelPos":""},
+    {"type":"furniture","label":"Dresser","left":505.325,"top":242.175,"width":45.6,"height":32,"rotation":0,"color":"#8FA6B8","shape":"","labelPos":""},
+    {"type":"furniture","label":"Vanity","left":110.587,"top":405.8,"width":143.2,"height":32.8,"rotation":0,"color":"#7C8A94","shape":"","labelPos":""},
+    {"type":"furniture","label":"Toilet","left":74.575,"top":396,"width":25.6,"height":44.8,"rotation":0,"color":"#7C8A94","shape":"","labelPos":""},
+    {"type":"furniture","label":"Tub / shower","left":-6.8125,"top":368.2,"width":96,"height":51.2,"rotation":90,"color":"#7C8A94","shape":"","labelPos":""},
+    {"type":"furniture","label":"Bookshelf","left":582.55,"top":216.188,"width":57.6,"height":19.2,"rotation":0,"color":"#8C4F39","shape":"","labelPos":""},
+    {"type":"furniture","label":"Washer / dryer","left":68.575,"top":296.2,"width":43.2,"height":48,"rotation":0,"color":"#7C8A94","shape":"","labelPos":""},
+    {"type":"furniture","label":"couch piece","left":513.4,"top":23,"width":71.2,"height":71.2,"rotation":0,"color":"#65a1d2","shape":"","labelPos":""},
+    {"type":"furniture","label":"Desk","left":595.175,"top":243.375,"width":57.6,"height":32,"rotation":0,"color":"#fb8232","shape":"","labelPos":""},
+    {"type":"furniture","label":"Dresser","left":616.962,"top":97.5375,"width":40.8,"height":22.4,"rotation":90,"color":"#A69065","shape":"","labelPos":""},
+    {"type":"counter","label":"Kitchen Counter & Appliances","left":81,"top":25.8,"width":219.2,"height":49.6,"rotation":0,"color":"rgba(220,215,204,0.88)","shape":"","labelPos":""},
+    {"type":"furniture","label":"Desk","left":597.229,"top":17.2715,"width":77.6,"height":38.4,"rotation":43,"color":"#fd7f2b","shape":"triangle","labelPos":""},
+    {"type":"wall","label":"Wall","left":188.188,"top":301.8,"width":68,"height":45.6,"rotation":0,"color":"","shape":"","labelPos":""},
+    {"type":"furniture","label":"Bar stool","left":182.188,"top":170.2,"width":25.6,"height":25.6,"rotation":0,"color":"#7A9471","shape":"","labelPos":""},
+    {"type":"furniture","label":"Bar stool","left":240.388,"top":169.8,"width":25.6,"height":25.6,"rotation":0,"color":"#7A9471","shape":"","labelPos":""}
+  ]
+};
+
+let customIdCounter = 1;
+const CUSTOM_ITEMS = [];
+
+const FURNITURE_BY_ID = {};
+function indexGroup(group) {
+  group.items.forEach(it => {
+    FURNITURE_BY_ID[it.id] = Object.assign({}, it, { color: it.color || group.color });
+  });
+}
+FURNITURE_GROUPS.forEach(indexGroup);
+
+const canvas = document.getElementById('canvas');
+const palette = document.getElementById('palette');
+const countEl = document.getElementById('piece-count');
+const inspector = document.getElementById('inspector');
+const inspName = document.getElementById('insp-name');
+const inspColor = document.getElementById('insp-color');
+const inspColorField = document.getElementById('insp-color-field');
+const inspLabelPosField = document.getElementById('insp-labelpos-field');
+const inspW = document.getElementById('insp-w');
+const inspH = document.getElementById('insp-h');
+const inspR = document.getElementById('insp-r');
+const inspRNum = document.getElementById('insp-r-num');
+
+let mode = 'move';
+let selected = null;
+let roomsLocked = false;
+
+// ---------- Dimension formatting ----------
+function feetIn(totalInches) {
+  const ft = Math.floor(totalInches / 12);
+  const inch = Math.round(totalInches - ft * 12);
+  return ft + "'-" + inch + '"';
+}
+function formatDims(wPx, hPx) {
+  const wIn = Math.round(wPx / SCALE);
+  const hIn = Math.round(hPx / SCALE);
+  return feetIn(wIn) + ' x ' + feetIn(hIn);
+}
+function updateDimsLabel(el) {
+  const dimsEl = el.querySelector('.item-dims');
+  if (dimsEl) dimsEl.textContent = formatDims(parseFloat(el.style.width), parseFloat(el.style.height));
+  refreshRoomLegend();
+}
+function refreshRoomLegend() {
+  const legendEl = document.getElementById('room-legend');
+  if (!legendEl) return;
+  legendEl.innerHTML = '';
+  const rooms = Array.from(canvas.querySelectorAll('.placed-item.type-room'));
+  if (rooms.length === 0) {
+    const p = document.createElement('p');
+    p.className = 'legend-empty';
+    p.textContent = 'No rooms yet.';
+    legendEl.appendChild(p);
+    return;
+  }
+  rooms.forEach(el => {
+    const row = document.createElement('div');
+    row.className = 'legend-row';
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'legend-name';
+    nameSpan.textContent = el.dataset.label || 'Room';
+    const dimsSpan = document.createElement('span');
+    dimsSpan.className = 'legend-dims';
+    dimsSpan.textContent = formatDims(parseFloat(el.style.width), parseFloat(el.style.height));
+    row.appendChild(nameSpan);
+    row.appendChild(dimsSpan);
+    row.addEventListener('click', () => selectItem(el));
+    legendEl.appendChild(row);
+  });
+}
+
+// ---------- Load a layout (used by the sample + the Load button) ----------
+function applyLayout(data) {
+  deselect();
+  canvas.querySelectorAll('.placed-item').forEach(el => el.remove());
+  ((data && data.items) || []).forEach(it => {
+    const el = createItem({
+      label: it.label, w: it.width, h: it.height,
+      left: it.left, top: it.top, color: it.color, type: it.type,
+      shape: it.shape || undefined, labelPos: it.labelPos || undefined
+    });
+    if (it.rotation) {
+      el.dataset.rotation = String(it.rotation);
+      el.style.transform = 'rotate(' + it.rotation + 'deg)';
+    }
+  });
+  updateCount();
+  applyFurnitureVisibility();
+}
+
+// ---------- Show / hide all furniture (room-layout-only view) ----------
+let furnitureVisible = true;
+function applyFurnitureVisibility() {
+  canvas.classList.toggle('hide-furniture', !furnitureVisible);
+}
+
+// ---------- Start with the sample layout loaded ----------
+applyLayout(SAMPLE_LAYOUT);
+
+document.getElementById('lock-rooms').addEventListener('change', e => {
+  roomsLocked = e.target.checked;
+  document.querySelectorAll('.placed-item.type-room').forEach(el => {
+    el.classList.toggle('locked', roomsLocked);
+  });
+  if (selected && selected.dataset.type === 'room') {
+    removeResizeHandle(selected);
+    if (!roomsLocked) addResizeHandle(selected);
+  }
+});
+
+// ---------- Palette ----------
+function renderPaletteGroup(container, group) {
+  const g = document.createElement('div');
+  g.className = 'group';
+  const h2 = document.createElement('h2');
+  h2.textContent = group.room;
+  g.appendChild(h2);
+  group.items.forEach(item => {
+    const color = item.color || group.color;
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.draggable = true;
+    chip.style.borderLeftColor = color;
+    chip.dataset.id = item.id;
+    chip.innerHTML =
+      '<span class="chip-swatch" style="background:' + color + (item.shape === 'triangle' ? '; clip-path: polygon(50% 0%, 0% 100%, 100% 100%);' : '') + '"></span>' +
+      '<span>' + item.label + '</span>' +
+      '<span class="chip-dims">' + item.wIn + '&times;' + item.hIn + '"</span>';
+    chip.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', item.id);
+    });
+    g.appendChild(chip);
+  });
+  container.appendChild(g);
+}
+FURNITURE_GROUPS.forEach(group => renderPaletteGroup(palette, group));
+
+const customGroupEl = document.createElement('div');
+customGroupEl.className = 'group';
+customGroupEl.id = 'custom-group';
+palette.appendChild(customGroupEl);
+
+function renderCustomGroup() {
+  customGroupEl.innerHTML = '';
+  if (CUSTOM_ITEMS.length === 0) return;
+  renderPaletteGroup(customGroupEl, { room: 'Your pieces', color: '#6B4C6B', items: CUSTOM_ITEMS });
+}
+
+document.getElementById('add-custom-btn').addEventListener('click', () => {
+  const name = document.getElementById('cf-name').value.trim();
+  const w = parseFloat(document.getElementById('cf-w').value);
+  const h = parseFloat(document.getElementById('cf-h').value);
+  const color = document.getElementById('cf-color').value;
+  const shape = document.getElementById('cf-shape').value;
+  if (!name || !w || !h) return;
+  const id = 'custom-' + (customIdCounter++);
+  const def = { id: id, label: name, wIn: w, hIn: h, color: color, shape: shape };
+  CUSTOM_ITEMS.push(def);
+  FURNITURE_BY_ID[id] = def;
+  renderCustomGroup();
+  document.getElementById('cf-name').value = '';
+  document.getElementById('cf-w').value = '';
+  document.getElementById('cf-h').value = '';
+});
+
+// ---------- Mode toolbar ----------
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    mode = btn.dataset.mode;
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b === btn));
+    canvas.classList.toggle('mode-wall', mode === 'wall');
+    canvas.classList.toggle('mode-counter', mode === 'counter');
+    canvas.classList.toggle('mode-room', mode === 'room');
+    deselect();
+  });
+});
+
+// ---------- Drag furniture from palette ----------
+canvas.addEventListener('dragover', e => e.preventDefault());
+canvas.addEventListener('drop', e => {
+  e.preventDefault();
+  const id = e.dataTransfer.getData('text/plain');
+  const def = FURNITURE_BY_ID[id];
+  if (!def) return;
+  const rect = canvas.getBoundingClientRect();
+  const w = def.wIn * SCALE, h = def.hIn * SCALE;
+  const x = e.clientX - rect.left - w / 2;
+  const y = e.clientY - rect.top - h / 2;
+  createItem({ label: def.label, w: w, h: h, left: x, top: y, color: def.color, type: 'furniture', shape: def.shape });
+});
+
+// ---------- Draw wall / counter ----------
+let drawStart = null;
+let previewEl = null;
+
+canvas.addEventListener('pointerdown', e => {
+  if (e.target !== canvas) return;
+  if (mode === 'move') { deselect(); return; }
+  const rect = canvas.getBoundingClientRect();
+  drawStart = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  previewEl = document.createElement('div');
+  previewEl.className = 'draw-preview';
+  canvas.appendChild(previewEl);
+  canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener('pointermove', e => {
+  if (!drawStart || !previewEl) return;
+  const rect = canvas.getBoundingClientRect();
+  const cx = e.clientX - rect.left, cy = e.clientY - rect.top;
+  const x = Math.min(cx, drawStart.x), y = Math.min(cy, drawStart.y);
+  const w = Math.abs(cx - drawStart.x), h = Math.abs(cy - drawStart.y);
+  previewEl.style.left = x + 'px';
+  previewEl.style.top = y + 'px';
+  previewEl.style.width = w + 'px';
+  previewEl.style.height = h + 'px';
+});
+canvas.addEventListener('pointerup', e => {
+  if (!drawStart) return;
+  const rect = canvas.getBoundingClientRect();
+  const cx = e.clientX - rect.left, cy = e.clientY - rect.top;
+  let x = Math.min(cx, drawStart.x), y = Math.min(cy, drawStart.y);
+  let w = Math.abs(cx - drawStart.x), h = Math.abs(cy - drawStart.y);
+  if (previewEl) { previewEl.remove(); previewEl = null; }
+  drawStart = null;
+  if (w < 8 && h < 8) {
+    w = mode === 'wall' ? 80 : mode === 'room' ? 140 : 60;
+    h = mode === 'wall' ? 8 : mode === 'room' ? 110 : 40;
+  }
+  let newEl = null;
+  if (mode === 'wall') {
+    newEl = createItem({ label: '', w: w, h: h, left: x, top: y, type: 'wall' });
+  } else if (mode === 'counter') {
+    newEl = createItem({ label: 'Counter', w: w, h: h, left: x, top: y, color: 'rgba(220,215,204,0.88)', type: 'counter' });
+  } else if (mode === 'room') {
+    newEl = createItem({ label: 'New room', w: w, h: h, left: x, top: y, color: '#EDEAE0', type: 'room' });
+  }
+  if (newEl) selectItem(newEl);
+});
+
+// ---------- Core item creation ----------
+function createItem(opts) {
+  const el = document.createElement('div');
+  const typeClass = opts.type === 'wall' ? ' type-wall' : opts.type === 'counter' ? ' type-counter' : opts.type === 'room' ? ' type-room' : '';
+  el.className = 'placed-item' + typeClass;
+  el.style.width = opts.w + 'px';
+  el.style.height = opts.h + 'px';
+  el.style.left = opts.left + 'px';
+  el.style.top = opts.top + 'px';
+  el.dataset.rotation = '0';
+  el.dataset.type = opts.type;
+  el.dataset.color = opts.color || '';
+  el.dataset.label = opts.label || (opts.type === 'wall' ? 'Wall' : opts.type === 'counter' ? 'Counter' : 'Room');
+  if (opts.type === 'room') el.dataset.labelPos = opts.labelPos || 'tl';
+
+  if (opts.shape === 'triangle') {
+    el.classList.add('has-shape');
+    const shapeDiv = document.createElement('div');
+    shapeDiv.className = 'item-shape tri';
+    shapeDiv.style.background = opts.color;
+    el.appendChild(shapeDiv);
+    el.dataset.shape = 'triangle';
+  } else if (opts.type === 'furniture' || opts.type === 'room' || opts.type === 'counter') {
+    el.style.background = opts.color;
+  }
+
+  const labelSpan = document.createElement('span');
+  labelSpan.className = 'item-label';
+  labelSpan.textContent = opts.label || '';
+  el.appendChild(labelSpan);
+
+  const dimsSpan = document.createElement('span');
+  dimsSpan.className = 'item-dims';
+  el.appendChild(dimsSpan);
+  updateDimsLabel(el);
+
+  const delBtn = document.createElement('button');
+  delBtn.className = 'del-btn';
+  delBtn.innerHTML = '&times;';
+  delBtn.setAttribute('aria-label', 'Remove');
+  delBtn.addEventListener('click', ev => {
+    ev.stopPropagation();
+    if (selected === el) deselect();
+    el.remove();
+    updateCount();
+  });
+  el.appendChild(delBtn);
+
+  el.addEventListener('dblclick', () => {
+    const rot = (parseInt(el.dataset.rotation, 10) + 90) % 360;
+    el.dataset.rotation = String(rot);
+    el.style.transform = 'rotate(' + rot + 'deg)';
+    if (selected === el) syncInspectorFromItem();
+  });
+
+  let downX = 0, downY = 0, moved = false;
+  el.addEventListener('pointerdown', e => {
+    if (e.target === delBtn) return;
+    if (e.target.classList && e.target.classList.contains('resize-handle')) return;
+    if (mode !== 'move') return;
+    if (el.dataset.type === 'room' && roomsLocked) {
+      e.stopPropagation();
+      selectItem(el);
+      return;
+    }
+    e.stopPropagation();
+    downX = e.clientX; downY = e.clientY; moved = false;
+    el.setPointerCapture(e.pointerId);
+    const canvasRect = canvas.getBoundingClientRect();
+    const itemRect = el.getBoundingClientRect();
+    const offsetX = e.clientX - itemRect.left;
+    const offsetY = e.clientY - itemRect.top;
+
+    function onMove(ev) {
+      if (Math.abs(ev.clientX - downX) > 3 || Math.abs(ev.clientY - downY) > 3) moved = true;
+      el.style.left = (ev.clientX - canvasRect.left - offsetX) + 'px';
+      el.style.top = (ev.clientY - canvasRect.top - offsetY) + 'px';
+    }
+    function onUp() {
+      el.removeEventListener('pointermove', onMove);
+      el.removeEventListener('pointerup', onUp);
+      if (!moved) selectItem(el);
+    }
+    el.addEventListener('pointermove', onMove);
+    el.addEventListener('pointerup', onUp);
+  });
+
+  canvas.appendChild(el);
+  updateCount();
+  return el;
+}
+
+// ---------- Selection & inspector ----------
+function selectItem(el) {
+  if (selected) selected.classList.remove('selected');
+  selected = el;
+  el.classList.add('selected');
+  addResizeHandle(el);
+  inspector.classList.add('open');
+  syncInspectorFromItem();
+}
+function deselect() {
+  if (selected) {
+    selected.classList.remove('selected');
+    removeResizeHandle(selected);
+  }
+  selected = null;
+  inspector.classList.remove('open');
+}
+function toHexColor(str) {
+  if (str && /^#[0-9a-fA-F]{6}$/.test(str)) return str;
+  return '#cccccc';
+}
+function isLocked(el) {
+  return el && el.dataset.type === 'room' && roomsLocked;
+}
+function syncInspectorFromItem() {
+  if (!selected) return;
+  inspName.value = selected.dataset.label || '';
+  const showColor = selected.dataset.type === 'furniture' || selected.dataset.type === 'room' || selected.dataset.type === 'counter';
+  inspColorField.style.display = showColor ? 'block' : 'none';
+  if (showColor) inspColor.value = toHexColor(selected.dataset.color);
+  const isRoom = selected.dataset.type === 'room';
+  inspLabelPosField.style.display = isRoom ? 'block' : 'none';
+  if (isRoom) {
+    const pos = selected.dataset.labelPos || 'tl';
+    document.querySelectorAll('.labelpos-btn').forEach(b => b.classList.toggle('active', b.dataset.pos === pos));
+  }
+  inspW.value = Math.round((parseFloat(selected.style.width) / SCALE) * 10) / 10;
+  inspH.value = Math.round((parseFloat(selected.style.height) / SCALE) * 10) / 10;
+  const rot = parseInt(selected.dataset.rotation, 10) || 0;
+  inspR.value = rot;
+  inspRNum.value = rot;
+  const locked = isLocked(selected);
+  inspW.disabled = locked;
+  inspH.disabled = locked;
+  inspColor.disabled = locked;
+  document.getElementById('insp-delete').disabled = locked;
+}
+inspName.addEventListener('input', () => {
+  if (!selected) return;
+  selected.dataset.label = inspName.value;
+  const labelEl = selected.querySelector('.item-label');
+  if (labelEl) labelEl.textContent = inspName.value;
+  refreshRoomLegend();
+});
+inspColor.addEventListener('input', () => {
+  if (!selected || isLocked(selected)) return;
+  if (selected.dataset.shape === 'triangle') {
+    const shapeDiv = selected.querySelector('.item-shape');
+    if (shapeDiv) shapeDiv.style.background = inspColor.value;
+  } else {
+    selected.style.background = inspColor.value;
+  }
+  selected.dataset.color = inspColor.value;
+});
+document.querySelectorAll('.labelpos-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (!selected || selected.dataset.type !== 'room') return;
+    selected.dataset.labelPos = btn.dataset.pos;
+    document.querySelectorAll('.labelpos-btn').forEach(b => b.classList.toggle('active', b === btn));
+  });
+});
+[inspW, inspH].forEach(input => {
+  input.addEventListener('input', () => {
+    if (!selected || isLocked(selected)) return;
+    const wIn = parseFloat(inspW.value) || 1;
+    const hIn = parseFloat(inspH.value) || 1;
+    selected.style.width = (wIn * SCALE) + 'px';
+    selected.style.height = (hIn * SCALE) + 'px';
+    updateDimsLabel(selected);
+  });
+});
+function applyRotation(val) {
+  if (!selected) return;
+  const rot = ((parseInt(val, 10) || 0) % 360 + 360) % 360;
+  selected.dataset.rotation = String(rot);
+  selected.style.transform = 'rotate(' + rot + 'deg)';
+  inspR.value = rot;
+  inspRNum.value = rot;
+}
+inspR.addEventListener('input', () => applyRotation(inspR.value));
+inspRNum.addEventListener('input', () => applyRotation(inspRNum.value));
+document.getElementById('insp-delete').addEventListener('click', () => {
+  if (!selected || isLocked(selected)) return;
+  const el = selected;
+  deselect();
+  el.remove();
+  updateCount();
+});
+
+document.addEventListener('keydown', e => {
+  if (!selected || isLocked(selected)) return;
+  const tag = document.activeElement.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+  if (e.key === 'Delete' || e.key === 'Backspace') {
+    const el = selected;
+    deselect();
+    el.remove();
+    updateCount();
+  }
+});
+
+// ---------- Resize handle ----------
+function addResizeHandle(el) {
+  removeResizeHandle(el);
+  if (isLocked(el)) return;
+  const handle = document.createElement('div');
+  handle.className = 'resize-handle';
+  el.appendChild(handle);
+  handle.addEventListener('pointerdown', e => {
+    e.stopPropagation();
+    handle.setPointerCapture(e.pointerId);
+    const startW = parseFloat(el.style.width);
+    const startH = parseFloat(el.style.height);
+    const startX = e.clientX, startY = e.clientY;
+    function onMove(ev) {
+      const newW = Math.max(12, startW + (ev.clientX - startX));
+      const newH = Math.max(12, startH + (ev.clientY - startY));
+      el.style.width = newW + 'px';
+      el.style.height = newH + 'px';
+      updateDimsLabel(el);
+      if (selected === el) syncInspectorFromItem();
+    }
+    function onUp() {
+      handle.removeEventListener('pointermove', onMove);
+      handle.removeEventListener('pointerup', onUp);
+    }
+    handle.addEventListener('pointermove', onMove);
+    handle.addEventListener('pointerup', onUp);
+  });
+}
+function removeResizeHandle(el) {
+  const h = el.querySelector('.resize-handle');
+  if (h) h.remove();
+}
+
+function updateCount() {
+  countEl.textContent = canvas.querySelectorAll('.placed-item:not(.type-room)').length;
+  refreshRoomLegend();
+}
+
+document.getElementById('clear-btn').addEventListener('click', () => {
+  deselect();
+  canvas.querySelectorAll('.placed-item').forEach(el => el.remove());
+  updateCount();
+});
+
+document.getElementById('sample-btn').addEventListener('click', () => {
+  applyLayout(SAMPLE_LAYOUT);
+});
+
+document.getElementById('toggle-furniture').addEventListener('change', e => {
+  furnitureVisible = e.target.checked;
+  if (!furnitureVisible && selected && selected.dataset.type === 'furniture') deselect();
+  applyFurnitureVisibility();
+});
+
+// ---------- Save / load layout as a file ----------
+function serializeLayout() {
+  const items = [];
+  canvas.querySelectorAll('.placed-item').forEach(el => {
+    items.push({
+      type: el.dataset.type,
+      label: el.dataset.label,
+      left: parseFloat(el.style.left),
+      top: parseFloat(el.style.top),
+      width: parseFloat(el.style.width),
+      height: parseFloat(el.style.height),
+      rotation: parseInt(el.dataset.rotation, 10) || 0,
+      color: el.dataset.color || '',
+      shape: el.dataset.shape || '',
+      labelPos: el.dataset.labelPos || ''
+    });
+  });
+  return items;
+}
+
+document.getElementById('save-btn').addEventListener('click', () => {
+  const payload = JSON.stringify({ scale: SCALE, items: serializeLayout() }, null, 2);
+  const blob = new Blob([payload], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'my-floorplan.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('load-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    let data;
+    try {
+      data = JSON.parse(reader.result);
+    } catch (err) {
+      alert('That file could not be read as a saved layout.');
+      return;
+    }
+    applyLayout(data);
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+</script>
+
+</body>
+</html>
