@@ -102,6 +102,12 @@
   .meta button, .meta .load-label { white-space: nowrap; line-height: 1; padding: 7px 13px; height: 32px; display: inline-flex; align-items: center; }
   #piece-count { font-variant-numeric: tabular-nums; }
   .meta > span { white-space: nowrap; }
+  .dims-seg { display: inline-flex; gap: 3px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 3px; }
+  .dims-seg .seg-label { align-self: center; font-size: 11px; color: var(--text-muted); padding: 0 6px 0 4px; white-space: nowrap; }
+  .dim-btn { background: none; border: none; font-size: 12px; padding: 5px 10px; border-radius: 6px; cursor: pointer; color: var(--ink); white-space: nowrap; line-height: 1; }
+  .dim-btn:hover { background: var(--accent-soft); }
+  .dim-btn.active { background: var(--accent); color: #fff; }
+  .dim-btn.active:hover { background: var(--accent); }
   #clear-btn, #sample-btn, #clear-furniture-btn { background: none; border: 1px solid var(--line); color: var(--ink); font-size: 12.5px; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
   #clear-btn:hover, #sample-btn:hover, #clear-furniture-btn:hover { background: var(--accent-soft); border-color: var(--accent); }
   #clear-btn:hover { background: #FBEAE8; border-color: #C4463A; color: #C4463A; }
@@ -183,8 +189,13 @@
   /* Room-layout-only view: hide every furniture piece at once */
   #canvas.hide-furniture .placed-item[data-type="furniture"] { display: none !important; }
 
-  /* Hide the dimension labels to declutter tight spaces */
-  #canvas.hide-dims .item-dims { display: none !important; }
+  /* Global measurement visibility by category (floor plan vs furniture) */
+  #canvas.hide-room-dims .placed-item.type-room .item-dims,
+  #canvas.hide-room-dims .placed-item.type-counter .item-dims,
+  #canvas.hide-room-dims .placed-item.type-wall .item-dims { display: none !important; }
+  #canvas.hide-furn-dims .placed-item[data-type="furniture"] .item-dims { display: none !important; }
+  /* Per-item measurement hide (set from the inspector) */
+  .placed-item.no-dims .item-dims { display: none !important; }
 
   .hint { max-width: 640px; margin: 14px auto 0; font-size: 12px; color: var(--text-muted); }
 
@@ -281,8 +292,14 @@
         </div>
         <div class="meta">
           <label class="lock-toggle"><input type="checkbox" id="toggle-furniture" checked> Show furniture</label>
-          <label class="lock-toggle"><input type="checkbox" id="toggle-dims" checked> Measurements</label>
           <label class="lock-toggle"><input type="checkbox" id="lock-rooms"> Lock rooms</label>
+          <div class="dims-seg" role="group" aria-label="Measurements">
+            <span class="seg-label">Measurements</span>
+            <button class="dim-btn active" data-dims="all">All</button>
+            <button class="dim-btn" data-dims="rooms">Rooms</button>
+            <button class="dim-btn" data-dims="furniture">Furniture</button>
+            <button class="dim-btn" data-dims="none">None</button>
+          </div>
           <span><span id="piece-count">0</span> pieces</span>
           <button id="save-btn">Save layout</button>
           <label for="load-input" id="load-btn" class="load-label">Load layout</label>
@@ -308,6 +325,9 @@
     <div class="field" id="insp-color-field">
       <label for="insp-color">Color</label>
       <input type="color" id="insp-color">
+    </div>
+    <div class="field">
+      <label class="lock-toggle" style="font-size:12.5px;color:var(--ink);cursor:pointer;"><input type="checkbox" id="insp-dims" checked> Show measurement</label>
     </div>
     <div class="field">
       <label for="insp-w">Width (in)</label>
@@ -452,6 +472,7 @@ const countEl = document.getElementById('piece-count');
 const inspector = document.getElementById('inspector');
 const inspName = document.getElementById('insp-name');
 const inspColor = document.getElementById('insp-color');
+const inspDims = document.getElementById('insp-dims');
 const inspColorField = document.getElementById('insp-color-field');
 const inspLabelPosField = document.getElementById('insp-labelpos-field');
 const inspW = document.getElementById('insp-w');
@@ -521,6 +542,7 @@ function applyLayout(data) {
       el.dataset.rotation = String(it.rotation);
       el.style.transform = 'rotate(' + it.rotation + 'deg)';
     }
+    if (it.showDims === false) el.classList.add('no-dims');
   });
   updateCount();
   applyFurnitureVisibility();
@@ -808,12 +830,17 @@ function syncInspectorFromItem() {
   const rot = parseInt(selected.dataset.rotation, 10) || 0;
   inspR.value = rot;
   inspRNum.value = rot;
+  inspDims.checked = !selected.classList.contains('no-dims');
   const locked = isLocked(selected);
   inspW.disabled = locked;
   inspH.disabled = locked;
   inspColor.disabled = locked;
   document.getElementById('insp-delete').disabled = locked;
 }
+inspDims.addEventListener('change', () => {
+  if (!selected) return;
+  selected.classList.toggle('no-dims', !inspDims.checked);
+});
 inspName.addEventListener('input', () => {
   if (!selected) return;
   selected.dataset.label = inspName.value;
@@ -940,8 +967,16 @@ document.getElementById('toggle-furniture').addEventListener('change', e => {
   applyFurnitureVisibility();
 });
 
-document.getElementById('toggle-dims').addEventListener('change', e => {
-  canvas.classList.toggle('hide-dims', !e.target.checked);
+// Measurements segmented control: All / Rooms only / Furniture only / None
+function applyDimsMode(mode) {
+  canvas.classList.toggle('hide-room-dims', mode === 'furniture' || mode === 'none');
+  canvas.classList.toggle('hide-furn-dims', mode === 'rooms' || mode === 'none');
+}
+document.querySelectorAll('.dim-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.dim-btn').forEach(b => b.classList.toggle('active', b === btn));
+    applyDimsMode(btn.dataset.dims);
+  });
 });
 
 // ---------- Save / load layout as a file ----------
@@ -958,7 +993,8 @@ function serializeLayout() {
       rotation: parseInt(el.dataset.rotation, 10) || 0,
       color: el.dataset.color || '',
       shape: el.dataset.shape || '',
-      labelPos: el.dataset.labelPos || ''
+      labelPos: el.dataset.labelPos || '',
+      showDims: !el.classList.contains('no-dims')
     });
   });
   return items;
