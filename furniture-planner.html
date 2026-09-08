@@ -98,9 +98,13 @@
   .modes { display: flex; gap: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 3px; }
   .mode-btn { background: none; border: none; font-size: 12.5px; padding: 6px 12px; border-radius: 6px; cursor: pointer; color: var(--ink); }
   .mode-btn.active { background: var(--accent); color: #fff; }
-  .meta { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 14px; }
-  #clear-btn, #sample-btn { background: none; border: 1px solid var(--line); color: var(--ink); font-size: 12.5px; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
-  #clear-btn:hover, #sample-btn:hover { background: var(--accent-soft); border-color: var(--accent); }
+  .meta { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
+  .meta button, .meta .load-label { white-space: nowrap; line-height: 1; padding: 7px 13px; height: 32px; display: inline-flex; align-items: center; }
+  #piece-count { font-variant-numeric: tabular-nums; }
+  .meta > span { white-space: nowrap; }
+  #clear-btn, #sample-btn, #clear-furniture-btn { background: none; border: 1px solid var(--line); color: var(--ink); font-size: 12.5px; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+  #clear-btn:hover, #sample-btn:hover, #clear-furniture-btn:hover { background: var(--accent-soft); border-color: var(--accent); }
+  #clear-btn:hover { background: #FBEAE8; border-color: #C4463A; color: #C4463A; }
   #save-btn, .load-label {
     background: none; border: 1px solid var(--line); color: var(--ink); font-size: 12.5px;
     padding: 6px 12px; border-radius: 6px; cursor: pointer; display: inline-block;
@@ -206,7 +210,7 @@
     background: var(--paper); cursor: pointer; color: var(--ink);
   }
   .labelpos-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .lock-toggle { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .lock-toggle { display: flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; }
 
   /* Narrow screens: stack the panels, let the plan scroll sideways */
   @media (max-width: 900px) {
@@ -280,6 +284,7 @@
           <label for="load-input" id="load-btn" class="load-label">Load layout</label>
           <input type="file" id="load-input" accept="application/json" style="display:none;">
           <button id="sample-btn">Load sample</button>
+          <button id="clear-furniture-btn">Clear furniture</button>
           <button id="clear-btn">Clear all</button>
         </div>
       </div>
@@ -916,6 +921,13 @@ document.getElementById('clear-btn').addEventListener('click', () => {
 
 document.getElementById('sample-btn').addEventListener('click', () => {
   applyLayout(SAMPLE_LAYOUT);
+});
+
+// Clear only the furniture, keeping the rooms / walls / counters (the floor plan)
+document.getElementById('clear-furniture-btn').addEventListener('click', () => {
+  if (selected && selected.dataset.type === 'furniture') deselect();
+  canvas.querySelectorAll('.placed-item[data-type="furniture"]').forEach(el => el.remove());
+  updateCount();
 });
 
 document.getElementById('toggle-furniture').addEventListener('change', e => {
